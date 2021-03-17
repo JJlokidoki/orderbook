@@ -37,7 +37,7 @@ class Order(NamedTuple):
     status: int
 
     def __str__(self):
-        return f"Transaction type is: {self.trans_type}; Price: {self.price}; Volume of order: {self.volume}"
+        return f"Transaction type is: {self.trans_type}; Price: {self.price}; Volume of order: {self.volume}; Status: {self.status}"
 
 
 class OrderBook:
@@ -52,26 +52,29 @@ class OrderBook:
         self.order = {}
         self.order_id = 0
         self.date = datetime.now().strftime("%d/%m/%Y")
-        self.deleted_orders = []
+        self.deleted_orders = {}
 
     def create_order(self, trans_type: str, price: float, volume: int):
         """
         Create new order in orders book
         """
-        if trans_type != 'bid' or trans_type != 'ask':
+        assert isinstance(price, float)
+        assert isinstance(volume, int)
+        if trans_type != 'bid' and trans_type != 'ask':
             raise UndefinedType(trans_type)
-        new_id = 1
+        self.order_id += 1
         place_time = datetime.now().strftime("%H:%M:%S")
-        self.order.update({new_id: Order(trans_type, price, volume, place_time, 0)})
+        self.order.update({self.order_id: Order(trans_type, price, volume, place_time, 0)})
+        return self.order_id
 
     def remove_order(self, id_to_del: int):
         """
         Change status of order to 'delete'
         """
         if id_to_del in self.order:
-            self.deleted_orders.append({id_to_del: self.order[id_to_del]._replace(status = 1)})
+            self.deleted_orders.update({id_to_del: self.order[id_to_del]._replace(status = 1)})
             self.order.pop(id_to_del)
-            return 1
+            return 0
         raise UndefinedID(id_to_del)
 
     def get_order_data(self, id_for_get: int):
