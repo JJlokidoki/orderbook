@@ -8,7 +8,7 @@ class UndefinedID(Exception):
     Custom exception for unknown ids
     """
     def __init__(self, und_id):
-        self.msg = f"{und_id} doesn't exist in order book"
+        self.msg = f" {und_id} doesn't exist in order book"
         super().__init__(self.msg)
 
 
@@ -17,9 +17,17 @@ class UndefinedType(Exception):
     Custom exception for unknown transaction type
     """
     def __init__(self, t_type):
-        self.msg = f"{t_type} unknown transaction type. Use 'bid' or 'ask' "
+        self.msg = f" {t_type} is unknown transaction type. Use 'bid' or 'ask' "
         super().__init__(self.msg)
 
+
+class IncorrectVolume(Exception):
+    """
+    Custom exception for incorrect order volume
+    """
+    def __init__(self, vol):
+        self.msg = f" {vol} is incorrect volume for orders"
+        super().__init__(self.msg)
 
 class Order(NamedTuple):
     """ 
@@ -60,6 +68,8 @@ class OrderBook:
         """
         assert isinstance(price, float)
         assert isinstance(volume, int)
+        if volume < 1:
+            raise 
         if trans_type != 'bid' and trans_type != 'ask':
             raise UndefinedType(trans_type)
         self.order_id += 1
@@ -92,29 +102,25 @@ class OrderBook:
         tmp_dict = self._sort_orders()
         bids_list = []
         asks_list = []
-        print(tmp_dict)
         for i, o in tmp_dict.items():
             if o.trans_type == 'bid':
-                if o.price not in bids_list:
+                if o.price not in [bid['price'] for bid in bids_list]:
                     bids_list.append({"price": o.price, 
-                                      "quantity": 0})
+                                      "quantity": o.volume})
                 else:
                     bids_list[-1].update({"quantity": bids_list[-1]["quantity"] + o.volume})
             elif o.trans_type == 'ask':
-                if o.price not in asks_list:
+                if o.price not in [ask['price'] for ask in asks_list]:
                     asks_list.append({"price": o.price, 
-                                      "quantity": 0})
+                                      "quantity": o.volume})
                 else:
                     asks_list[-1].update({"quantity": asks_list[-1]["quantity"] + o.volume})
-        return {"asks": asks_list, "bids": bids_list}
+        return {"asks": asks_list, "bids": sorted(bids_list, key = lambda t: t['price'])}
 
 
     def _sort_orders(self):
-        return OrderedDict(sorted(self.order.items(), key = lambda t: t[1].price))
+        """
+        Sorting orders
+        """
+        return OrderedDict(sorted(self.order.items(), key = lambda t: t[1].price, reverse=True))
 
-
-if __name__ == "__main__":
-    a = OrderBook('AAPL')
-    a.create_order('bid', 12.12, 123)
-    print(a.snapshot())
-    

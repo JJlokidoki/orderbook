@@ -55,8 +55,10 @@ class TestOrdersBook:
         assert isinstance(time, datetime.datetime), "Incorrect time format"
 
     @pytest.mark.parametrize("trans_type_p, price_p, volume_p", [
-        ('asd', round(uniform(0, 99999), 2), '12sd3'),
-        ('bid', 'zxc', randint(0, 9999))
+        ('inc', round(uniform(0, 99999), 2), 'str'),
+        ('bid', 'str', randint(0, 9999), 
+        ('bid', 1, 0),
+        ('ask', 2, -1)
     ])
     def test_neg_creating_orders(self, trans_type_p, price_p, volume_p):
         """
@@ -109,5 +111,12 @@ class TestOrdersBook:
             res = self.new_orderbook.remove_order(id_for_get)
 
     def test_snapshot(self):
-        pass 
-
+        """
+        Test snapshot
+        """
+        snap = self.new_orderbook.snapshot()
+        assert sorted([i for i in snap]) == ['asks', 'bids']
+        assert not [i['quantity'] for i in snap['asks'] if i < 1]
+        assert not [i['quantity'] for i in snap['bids'] if i < 1] # if list is empty that cool
+        assert len([n['price'] for n in snap['asks']]) == len(set([n['price'] for n in snap['asks']]))
+        assert len([n['price'] for n in snap['bids']]) == len(set([n['price'] for n in snap['bids']]))
