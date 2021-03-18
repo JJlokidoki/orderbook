@@ -69,7 +69,7 @@ class OrderBook:
         assert isinstance(price, float)
         assert isinstance(volume, int)
         if volume < 1:
-            raise 
+            raise IncorrectVolume(volume)
         if trans_type != 'bid' and trans_type != 'ask':
             raise UndefinedType(trans_type)
         self.order_id += 1
