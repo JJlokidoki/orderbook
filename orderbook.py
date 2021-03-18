@@ -31,7 +31,8 @@ class IncorrectVolume(Exception):
 
 class Order(NamedTuple):
     """ 
-    Order params:
+    Class of orders
+    Params:
     1. type (bid/ask) 
     2. price
     3. volume
@@ -50,7 +51,8 @@ class Order(NamedTuple):
 
 class OrderBook:
     """
-    Orders book parametrs
+    Class of order book
+    Parametrs
     1. item - lot (e.g. AAPL)
     2. order - place for preservation
     3. date 

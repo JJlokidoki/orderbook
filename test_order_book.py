@@ -1,6 +1,5 @@
 import pytest
 import datetime
-from typing import List
 from random import uniform, randint, choice
 
 import orderbook
@@ -26,7 +25,7 @@ class TestOrdersBook:
         ('ask', round(uniform(0, 99999), 3), randint(0, 9999)),
         ('ask', round(uniform(0, 99999), 1), randint(0, 9999))
     ], ids = ['correct bid', 'correct ask', 'correct ask'])
-    def test_creating_orders(self, trans_type_p, price_p, volume_p):
+    def test_creating_orders(self, trans_type_p: str, price_p: int, volume_p: int):
         """
         Test creating orders
         """
@@ -48,7 +47,7 @@ class TestOrdersBook:
         ('bid', 1, 0),
         ('ask', 2, -1)
     ], ids = ['incorrect type', 'incorrect price', 'incorrect volume', 'incorrect volume'])
-    def test_neg_creating_orders(self, trans_type_p, price_p, volume_p):
+    def test_neg_creating_orders(self, trans_type_p: str, price_p: int, volume_p: int):
         """
         Negative tests creating orders
         """
@@ -69,7 +68,7 @@ class TestOrdersBook:
     @pytest.mark.parametrize("id_to_del", [
         (-1), (0), ('123')
     ], ids = ['incorrect id (neg int)', 'incorrect id (zero)', 'incorrect id (str)'])
-    def test_neg_remove_orders(self, id_to_del):
+    def test_neg_remove_orders(self, id_to_del: int):
         """
         Negative tests removing orders
         """
@@ -91,7 +90,7 @@ class TestOrdersBook:
     @pytest.mark.parametrize("id_for_get", [
         (-1), (0), ('123')
     ], ids = ['incorrect id (neg int)', 'incorrect id (zero)', 'incorrect id (str)'])
-    def test_neg_getting_order_data(self, id_for_get):
+    def test_neg_getting_order_data(self, id_for_get: int):
         """
         Negative tests getting data of orders
         """
