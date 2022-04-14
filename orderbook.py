@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Dict
 from datetime import datetime
 from collections import OrderedDict
 
@@ -45,7 +45,7 @@ class Order(NamedTuple):
     placement_time: str
     status: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Transaction type is: {self.trans_type}; Price: {self.price}; Volume of order: {self.volume}; Status: {self.status}"
 
 
@@ -64,7 +64,7 @@ class OrderBook:
         self.date = datetime.now().strftime("%d/%m/%Y")
         self.deleted_orders = {}
 
-    def create_order(self, trans_type: str, price: float, volume: int):
+    def create_order(self, trans_type: str, price: float, volume: int) -> int:
         """
         Create new order in orders book
         """
@@ -72,14 +72,14 @@ class OrderBook:
         assert isinstance(volume, int)
         if volume < 1:
             raise IncorrectVolume(volume)
-        if trans_type != 'bid' and trans_type != 'ask':
+        if trans_type not in ['bid', 'ask']:
             raise UndefinedType(trans_type)
         self.order_id += 1
         place_time = datetime.now().strftime("%H:%M:%S")
         self.order.update({self.order_id: Order(trans_type, price, volume, place_time, 0)})
         return self.order_id
 
-    def remove_order(self, id_to_del: int):
+    def remove_order(self, id_to_del: int) -> int:
         """
         Change status of order to 'delete'
         """
@@ -89,7 +89,7 @@ class OrderBook:
             return 0
         raise UndefinedID(id_to_del)
 
-    def get_order_data(self, id_for_get: int):
+    def get_order_data(self, id_for_get: int) -> str:
         """
         Getting data of order
         """
@@ -97,14 +97,14 @@ class OrderBook:
             return str(self.order[id_for_get])
         raise UndefinedID(id_for_get)
 
-    def snapshot(self):
+    def snapshot(self) -> Dict:
         """
         Getting snapshot of order book
         """
         tmp_dict = self._sort_orders()
         bids_list = []
         asks_list = []
-        for i, o in tmp_dict.items():
+        for _, o in tmp_dict.items():
             if o.trans_type == 'bid':
                 if o.price not in [bid['price'] for bid in bids_list]:
                     bids_list.append({"price": o.price, 
@@ -120,9 +120,31 @@ class OrderBook:
         return {"asks": asks_list, "bids": sorted(bids_list, key = lambda t: t['price'])}
 
 
-    def _sort_orders(self):
+    def _sort_orders(self) -> OrderedDict:
         """
         Sorting orders
         """
         return OrderedDict(sorted(self.order.items(), key = lambda t: t[1].price, reverse=True))
 
+
+def pretty_snap(snap: Dict, name: str) -> None:
+    delim = '|'
+    res = []
+    for ask in snap['asks']:
+        res.append(str(ask['price']).ljust(7) + delim + str(ask['quantity']).rjust(7))
+    res.append('')
+    for bid in snap['bids']:
+        res.append(str(bid['quantity']).ljust(7) + delim + str(bid['price']).rjust(7))
+
+    print(name.center(15))
+    print('\n'.join(res))
+
+
+if __name__ == '__main__':
+    O = OrderBook('BTC')
+    x = [{'tt': 'bid', 'p': 11.23, 'v': 2}, {'tt': 'bid', 'p': 10.00, 'v': 7}, {'tt': 'bid', 'p': 10.00, 'v': 7}, 
+    {'tt': 'ask', 'p': 305.00, 'v': 1}, {'tt': 'ask', 'p': 0.5, 'v': 11}, {'tt': 'ask', 'p': 0.5, 'v': 11}]
+    for i in x:
+        O.create_order(i['tt'], i['p'], i['v'])
+    c = O.snapshot()
+    pretty_snap(c, O.item)
